@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    # ref: https://github.com/marketplace/actions/automated-build-android-app-with-github-action
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        fetch-depth: 50
+    - name: Set Up JDK
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'zulu'
+        java-version: '17'
+        cache: gradle
+
+    - name: Grant execute permission for gradlew
+      run: chmod +x gradlew
+
+    - name: Print generated version
+      run: ./gradlew --quiet androidGitVersion
+
+    - name: Build with Gradle
+      run: ./gradlew build
+
+    - name: Build apk debug project (APK)
+      run: ./gradlew assembleDebug
+
+    - name: Copy Apks to dist folder
+      run: |
+        rm -fr dist && mkdir -p dist
+        mv app/build/outputs/apk/debug/app-debug.apk dist/u2.jar
+    
+    - name: Publish APKs
+      run: |
+        gh release view ${{ github.ref_name }} > /dev/null 2>&1 || gh release create ${{ github.ref_name }} --generate-notes
+        gh release upload ${{ github.ref_name }} dist/* --clobber
+      env:
+        GH_TOKEN: ${{ secrets.GH_TOKEN }}

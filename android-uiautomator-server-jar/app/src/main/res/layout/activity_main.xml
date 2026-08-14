@@ -1,0 +1,180 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context="com.github.uiautomator.MainActivity">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:orientation="horizontal">
+            <TextView
+                android:id="@+id/uiautomator_status"
+                style="@style/LeftTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="@string/monitor_service_title"
+                android:textStyle="bold" />
+            <TextView
+                android:id="@+id/uiautomator_mode"
+                style="@style/LeftTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/shot_cut"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/development_settings"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/develop_mode" />
+
+            <Button
+                android:id="@+id/accessibility"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/barrier_free" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btn_identify"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/identify" />
+
+            <Button
+                android:id="@+id/btn_finish"
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/quit" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <Button
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="showFloatWindow"
+                android:text="开启悬浮窗" />
+
+            <Button
+                style="@style/SelectButton"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:onClick="dismissFloatWindow"
+                android:text="关闭悬浮窗" />
+        </LinearLayout>
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <Button
+            style="@style/SelectButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:onClick="requestIgnoreBatteryOptimizations"
+            android:text="忽略电池优化" />
+
+        <Button
+            style="@style/SelectButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Null" />
+    </LinearLayout>
+
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="@string/avaible_internal_storage"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/in_storage"
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="本机IP地址:"
+                android:textStyle="bold"/>
+
+            <TextView
+                android:id="@+id/ip_address"
+                style="@style/LeftTitle"
+                android:layout_width="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+            <TextView
+                style="@style/LeftTitle"
+                android:id="@+id/app_version"
+                android:layout_width="0dp"
+                android:layout_weight="1"
+                android:text="version: todo"
+                android:textStyle="bold"/>
+        </LinearLayout>
+
+    </LinearLayout>
+
+</ScrollView>
