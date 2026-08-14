@@ -29,6 +29,26 @@ from uiautomator2.version import __apk_version__
 logger = logging.getLogger(__name__)
 
 DEFAULT_SERVER_PORT = 9008
+PACKAGE_ROOT = Path(__file__).resolve().parents[1]
+DEFAULT_U2_JAR_RELATIVE_PATH = Path(
+    "android-uiautomator-server-jar/app/build/outputs/apk/debug/app-debug.apk"
+)
+
+
+def default_u2_jar_path() -> Optional[Path]:
+    """返回源码 subtree 的构建产物；未构建时保留旧资源回退。"""
+    path = PACKAGE_ROOT / DEFAULT_U2_JAR_RELATIVE_PATH
+    return path if path.is_file() else None
+
+
+def validate_u2_jar_path(jar_path: Union[str, Path]) -> Path:
+    """校验调用方指定的本地 u2.jar，并返回绝对路径。"""
+    path = Path(jar_path).expanduser().resolve()
+    if not path.is_file():
+        raise FileNotFoundError(f"u2.jar not found: {path}")
+    if not os.access(path, os.R_OK):
+        raise PermissionError(f"u2.jar is not readable: {path}")
+    return path
 
 
 def check_port(port: int) -> None:
@@ -216,7 +236,12 @@ class BasicUiautomatorServer(AbstractUiautomatorServer):
     _locks: ClassVar[Dict[Tuple[str, int], threading.Lock]] = {}
     _locks_guard: ClassVar[threading.Lock] = threading.Lock()
 
-    def __init__(self, dev: adbutils.AdbDevice, device_server_port: int = DEFAULT_SERVER_PORT) -> None:
+    def __init__(
+        self,
+        dev: adbutils.AdbDevice,
+        device_server_port: int = DEFAULT_SERVER_PORT,
+        u2_jar_path: Optional[Union[str, Path]] = None,
+    ) -> None:
         check_port(device_server_port)
         key = (dev.serial, device_server_port)
         with BasicUiautomatorServer._locks_guard:
@@ -227,6 +252,12 @@ class BasicUiautomatorServer(AbstractUiautomatorServer):
         self._process = None
         self._debug = False
         self._device_server_port = device_server_port
+        # 优先使用 jar subtree 的构建产物；显式路径仍可用于对照实验。
+        self._u2_jar_path = (
+            validate_u2_jar_path(u2_jar_path)
+            if u2_jar_path
+            else default_u2_jar_path()
+        )
         self.start_uiautomator()
         atexit.register(self.stop_uiautomator, wait=False)
     
@@ -255,13 +286,22 @@ class BasicUiautomatorServer(AbstractUiautomatorServer):
                 self._wait_ready()
 
     def _setup_jar(self):
+        target_path = "/data/local/tmp/u2.jar"
+        if self._u2_jar_path is not None:
+            logger.info("use fixed u2.jar: %s (%d bytes)", self._u2_jar_path, self._u2_jar_path.stat().st_size)
+            self._push_jar(self._u2_jar_path, target_path)
+            return
+
         with with_package_resource("assets/u2.jar") as jar_path:
-            target_path = "/data/local/tmp/u2.jar"
-            if self._check_device_file_hash(jar_path, target_path):
-                logger.debug("file u2.jar already pushed")
-            else:
-                logger.debug("push %s -> %s", jar_path, target_path)
-                self._dev.sync.push(jar_path, target_path, check=True)
+            self._push_jar(jar_path, target_path)
+
+    def _push_jar(self, jar_path: Path, target_path: str) -> None:
+        """按本地 jar 的 MD5 判断是否需要推送到设备。"""
+        if self._check_device_file_hash(jar_path, target_path):
+            logger.debug("file u2.jar already pushed: %s", jar_path)
+        else:
+            logger.debug("push %s -> %s", jar_path, target_path)
+            self._dev.sync.push(jar_path, target_path, check=True)
     
     def _check_device_file_hash(self, local_file: Union[str, Path], remote_file: str) -> bool:
         """ check if remote file hash is correct """

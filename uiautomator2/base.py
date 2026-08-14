@@ -4,6 +4,7 @@ import logging
 import re
 import time
 from functools import cached_property
+from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import adbutils
@@ -23,7 +24,13 @@ class _BaseClient(BasicUiautomatorServer):
     提供最基础的控制类，这个类暂时先不公开吧
     """
 
-    def __init__(self, serial: Optional[Union[str, adbutils.AdbDevice]] = None, *, port: int = DEFAULT_SERVER_PORT):
+    def __init__(
+        self,
+        serial: Optional[Union[str, adbutils.AdbDevice]] = None,
+        *,
+        port: int = DEFAULT_SERVER_PORT,
+        u2_jar_path: Optional[Union[str, Path]] = None,
+    ):
         """
         Args:
             serial: device serialno
@@ -37,7 +44,12 @@ class _BaseClient(BasicUiautomatorServer):
             self.__serial = serial
             self._dev = self._wait_for_device()
         self._debug = False
-        BasicUiautomatorServer.__init__(self, dev=self._dev, device_server_port=port)
+        BasicUiautomatorServer.__init__(
+            self,
+            dev=self._dev,
+            device_server_port=port,
+            u2_jar_path=u2_jar_path,
+        )
     
     @property
     def _serial(self) -> str:

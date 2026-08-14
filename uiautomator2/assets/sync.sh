@@ -5,7 +5,8 @@ set -e
 
 APK_VERSION=$(cat ../version.py| grep apk_version | awk '{print $NF}')
 APK_VERSION=${APK_VERSION//[\"\']}
-JAR_VERSION="0.4.0"
+# 当前阶段固定使用调用方指定的本地 u2.jar，暂不允许网络同步覆盖它。
+JAR_VERSION="local-fixed"
 
 cd "$(dirname $0)"
 
@@ -38,7 +39,7 @@ function download_jar() {
 
 echo "APK_VERSION: $APK_VERSION"
 
-download_jar
+echo "Skip u2.jar network sync; use the fixed local jar configured by the Python client."
 download_apk "$APK_VERSION" "app-uiautomator.apk"
 cat > version.json <<EOF
 {

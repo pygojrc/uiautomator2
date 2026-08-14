@@ -487,7 +487,12 @@ class _AppMixIn(AbstractShell):
             Session
         """
         self.app_start(package_name, stop=not attach)
-        return Session(self.adb_device, package_name, port=self._device_server_port)
+        return Session(
+            self.adb_device,
+            package_name,
+            port=self._device_server_port,
+            u2_jar_path=self._u2_jar_path,
+        )
 
     def _compat_shell_ps(self) -> str:
         """
@@ -911,8 +916,14 @@ class Session(Device):
     """Session keeps watch the app status
     each jsonrpc call will check if the package is still running
     """
-    def __init__(self, dev: adbutils.AdbDevice, package_name: str, port: int):
-        super().__init__(dev, port=port)
+    def __init__(
+        self,
+        dev: adbutils.AdbDevice,
+        package_name: str,
+        port: int,
+        u2_jar_path=None,
+    ):
+        super().__init__(dev, port=port, u2_jar_path=u2_jar_path)
         self._package_name = package_name
         self._pid = self.app_wait(self._package_name)
     
@@ -945,7 +956,12 @@ class Session(Device):
         self.close()
 
 
-def connect(serial: Union[str, adbutils.AdbDevice] = None, *, port: int = DEFAULT_SERVER_PORT) -> Device:
+def connect(
+    serial: Union[str, adbutils.AdbDevice] = None,
+    *,
+    port: int = DEFAULT_SERVER_PORT,
+    u2_jar_path=None,
+) -> Device:
     """
     Args:
         serial (str): Android device serialno or adb device instance
@@ -963,10 +979,15 @@ def connect(serial: Union[str, adbutils.AdbDevice] = None, *, port: int = DEFAUL
     """
     if not serial:
         serial = os.getenv("ANDROID_SERIAL")
-    return connect_usb(serial, port=port)
+    return connect_usb(serial, port=port, u2_jar_path=u2_jar_path)
 
 
-def connect_usb(serial: Union[str, adbutils.AdbDevice, None] = None, *, port: int = DEFAULT_SERVER_PORT) -> Device:
+def connect_usb(
+    serial: Union[str, adbutils.AdbDevice, None] = None,
+    *,
+    port: int = DEFAULT_SERVER_PORT,
+    u2_jar_path=None,
+) -> Device:
     """
     Args:
         serial (str): android device serial or adb device instance
@@ -980,4 +1001,4 @@ def connect_usb(serial: Union[str, adbutils.AdbDevice, None] = None, *, port: in
     """
     if not serial:
         serial = adbutils.adb.device()
-    return Device(serial, port=port)
+    return Device(serial, port=port, u2_jar_path=u2_jar_path)

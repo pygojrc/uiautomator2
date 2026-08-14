@@ -6,7 +6,33 @@ from unittest.mock import Mock, mock_open, patch
 
 import pytest
 
-from uiautomator2.core import DEFAULT_SERVER_PORT, BasicUiautomatorServer
+from uiautomator2.core import (
+    DEFAULT_SERVER_PORT,
+    DEFAULT_U2_JAR_RELATIVE_PATH,
+    BasicUiautomatorServer,
+    default_u2_jar_path,
+    validate_u2_jar_path,
+)
+
+
+def test_default_u2_jar_path_uses_jar_subtree():
+    path = default_u2_jar_path()
+
+    if path is not None:
+        assert path.name == "app-debug.apk"
+        assert path.as_posix().endswith(DEFAULT_U2_JAR_RELATIVE_PATH.as_posix())
+
+
+def test_validate_u2_jar_path(tmp_path):
+    jar_path = tmp_path / "u2.jar"
+    jar_path.write_bytes(b"baseline jar")
+
+    assert validate_u2_jar_path(jar_path) == jar_path.resolve()
+
+
+def test_validate_u2_jar_path_missing(tmp_path):
+    with pytest.raises(FileNotFoundError, match="u2.jar not found"):
+        validate_u2_jar_path(tmp_path / "missing.jar")
 
 
 @pytest.fixture
@@ -88,7 +114,24 @@ class TestCheckDeviceFileHash:
         
         # Verify the result is False (hash doesn't match)
         assert result is False
-    
+
+
+def test_setup_jar_uses_explicit_local_path(tmp_path):
+    jar_path = tmp_path / "fixed-u2.jar"
+    jar_path.write_bytes(b"fixed jar")
+
+    server = object.__new__(BasicUiautomatorServer)
+    server._u2_jar_path = jar_path
+    server._dev = Mock()
+    server._check_device_file_hash = Mock(return_value=False)
+
+    server._setup_jar()
+
+    server._check_device_file_hash.assert_called_once_with(jar_path, "/data/local/tmp/u2.jar")
+    server._dev.sync.push.assert_called_once_with(jar_path, "/data/local/tmp/u2.jar", check=True)
+
+
+class TestCheckDeviceFileHashFallback:
     def test_md5_command_also_fails(self, mock_server):
         """Test when both toybox and md5 commands fail to find the file"""
         server, mock_dev = mock_server

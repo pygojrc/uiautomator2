@@ -116,3 +116,4 @@ docs/*.rst
 *.lock
 junit.xml
 .opencode/
+scripts/build_u2_server_jar.sh
